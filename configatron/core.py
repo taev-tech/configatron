@@ -2,44 +2,83 @@
 __init__ and included in the toplevel package __all__.
 '''
 import dataclasses
+import enum
 import functools
 from typing import (
-    Annotated,
     Any,
     Optional)
 
 
-def _collect_medatada(
-        typ=None, /, _metadata_collector_class, dynamic=False,
-        backend_alias=None, backend_args=None):
-    collected_metadata = _metadata_collector_class(
-        dynamic=dynamic,
-        backend_alias=backend_alias,
-        backend_args=backend_args)
+def config(cls=None, /):
+    if cls is None:
+        def decorator_closure(cls):
+            return _make_configatron(cls)
 
-    if typ is None:
-        return collected_metadata
+        return decorator_closure
 
     else:
-        return Annotated[typ, collected_metadata]
+        return _make_configatron(cls)
+
+
+def _make_configatron(cls):
+    configatron = dataclasses.dataclass(frozen=True, eq=False)(cls)
+    # Dynamic configs can be mutated, so make sure we're not hashable
+    configatron.__hash__ = None
+
+    for field in dataclasses.fields(configatron):
+        metadata = field.metadata.get('configatron')
+        if metadata is None:
+            raise TypeError('All config fields must be a configatron field!')
+
+        if metadata.primary_name is None:
+            metadata.primary_name = field.name
+
+    return configatron
+
+
+class _ConfigatronMode(enum.Enum):
+    UNSECURED = enum.auto()
+    SECRET = enum.auto()
+
+
+def _collect_medatada_into_field(
+        *, _configatron_mode, default=dataclasses.MISSING,
+        default_factory=dataclasses.MISSING, dynamic=False,
+        primary_name=None, secondary_name=None, backend_args=None):
+    '''Collect all of the Configatron-relevant metadata and package it
+    into a single object, returning a dataclass field with the metadata
+    stored there as, well, metadata.
+    '''
+    metadata = _ConfigatronMetadata(
+        configatron_mode=_configatron_mode,
+        dynamic=dynamic,
+        primary_name=primary_name,
+        secondary_name=secondary_name,
+        backend_args=backend_args)
+
+    return dataclasses.field(
+        default=default,
+        default_factory=default_factory,
+        metadata={'configatron': metadata})
 
 
 @dataclasses.dataclass
-class _ConfigMetadataCollector:
+class _ConfigatronMetadata:
+    configatron_mode: _ConfigatronMode
     dynamic: bool
-    backend_alias: Optional[str]
-    backend_args: dict[str, Any]
+    # Note: if this is None, we will infer it based on the field name during
+    # creation
+    primary_name: Optional[str] = None
+    secondary_name: Optional[str] = None
+    backend_args: Optional[dict[str, Any]] = dataclasses.field(
+        default_factory=dict)
 
-
-class ConfigFieldSecret(_ConfigMetadataCollector):
-    pass
-
-
-class ConfigFieldUnsecured(_ConfigMetadataCollector):
-    pass
+    def __post_init__(self):
+        if self.dynamic:
+            raise NotImplementedError()
 
 
 secret = functools.partial(
-    _collect_metadata, _metadata_collector_class=ConfigFieldSecret)
+    _collect_medatada_into_field, _configatron_mode=_ConfigatronMode.SECRET)
 unsecured = functools.partial(
-    _collect_metadata, _metadata_collector_class=ConfigFieldUnsecured)
+    _collect_medatada_into_field, _configatron_mode=_ConfigatronMode.UNSECURED)
