@@ -8,6 +8,16 @@ from typing import (
     Any,
     Optional)
 
+from configatron._runtime_state import (
+    get_loaded_config,
+    RawLookupKey)
+from configatron.exceptions import (
+    ConfigatronInternalError)
+
+
+# Used as a sentinel when the value doesn't appear in the config
+_MISSING = object()
+
 
 def configatron(*, namespace):
     def decorator_closure(cls):
@@ -32,6 +42,15 @@ def _make_configatron(cls, namespace):
 
         if metadata.primary_name is None:
             metadata.primary_name = field.name
+
+        value_proxy = _LoadedConfigatronValueProxy(
+            backend=None, namespace=namespace, metadata=metadata)
+        # Update the class -- NOT the instance -- with a non-data descriptor
+        # for the value. This should preserve instance value lookup, so only
+        # on the class itself will we be trying to access the values. Note that
+        # dataclasses do **not** add the fields to the class, so there's no
+        # conflict here.
+        setattr(cls, field.name, value_proxy)
 
     configatron.__configatron_namespace__ = namespace
 
@@ -64,6 +83,12 @@ def _collect_medatada_into_field(
         metadata={'configatron': metadata})
 
 
+secret = functools.partial(
+    _collect_medatada_into_field, _configatron_mode=_ConfigatronMode.SECRET)
+unsecured = functools.partial(
+    _collect_medatada_into_field, _configatron_mode=_ConfigatronMode.UNSECURED)
+
+
 @dataclasses.dataclass
 class _ConfigatronMetadata:
     configatron_mode: _ConfigatronMode
@@ -80,7 +105,39 @@ class _ConfigatronMetadata:
             raise NotImplementedError()
 
 
-secret = functools.partial(
-    _collect_medatada_into_field, _configatron_mode=_ConfigatronMode.SECRET)
-unsecured = functools.partial(
-    _collect_medatada_into_field, _configatron_mode=_ConfigatronMode.UNSECURED)
+class _LoadedConfigatronValueProxy:
+
+    def __init__(self, backend, namespace, metadata):
+        self._backend = backend
+        self._namespace = namespace
+        self._metadata = metadata
+        self._field_name = None
+
+    def __set_name__(self, owner, name):
+        self._field_name = name
+
+    def __get__(self, obj, objtype=None):
+        if obj is not None:
+            raise ConfigatronInternalError(
+                'Somehow you managed to directly access the configatron ' +
+                'value proxy? Please report to configatron maintainers!')
+
+        loaded_config = get_loaded_config()
+
+        primary_key = RawLookupKey(
+            backend=self._backend,
+            namespace=self._namespace,
+            name=self._metadata.primary_name)
+        secondary_key = RawLookupKey(
+            backend=self._backend,
+            namespace=self._namespace,
+            name=self._metadata.secondary_name)
+
+        loaded_value = loaded_config.get(primary_key, _MISSING)
+        if loaded_value is _MISSING:
+            loaded_value = loaded_config.get(secondary_key, _MISSING)
+        if loaded_value is _MISSING:
+            raise ConfigatronInternalError(
+                'Configatron allowed you to load an incomplete config!')
+
+        return loaded_value
