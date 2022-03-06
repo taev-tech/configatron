@@ -9,18 +9,18 @@ from typing import (
     Optional)
 
 
-def config(cls=None, /):
-    if cls is None:
-        def decorator_closure(cls):
-            return _make_configatron(cls)
+def configatron(*, namespace):
+    def decorator_closure(cls):
+        return _make_configatron(cls, namespace)
 
-        return decorator_closure
-
-    else:
-        return _make_configatron(cls)
+    return decorator_closure
 
 
-def _make_configatron(cls):
+def _make_configatron(cls, namespace):
+    """This is responsible for the actual logic of assembling a
+    configatron class, separated out from the decorator for ease of
+    testing.
+    """
     configatron = dataclasses.dataclass(frozen=True, eq=False)(cls)
     # Dynamic configs can be mutated, so make sure we're not hashable
     configatron.__hash__ = None
@@ -32,6 +32,8 @@ def _make_configatron(cls):
 
         if metadata.primary_name is None:
             metadata.primary_name = field.name
+
+    configatron.__configatron_namespace__ = namespace
 
     return configatron
 
