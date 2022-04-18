@@ -2,14 +2,10 @@ import dataclasses
 from functools import partial
 from unittest.mock import patch
 
-import pytest
-
-from configatron import (
-    configatron,
-    secret,
-    unsecured)
 from configatron._runtime_state import RawLookupKey
-from configatron.exceptions import ConfigNotLoaded
+from configatron.configatron_ import configatron
+from configatron.configatron_ import secret
+from configatron.configatron_ import unsecured
 
 
 class TestConfigatronDefinition:
@@ -18,7 +14,7 @@ class TestConfigatronDefinition:
     def test_definition(self):
         """Test the simplest case and make sure metadata is set etc.
         """
-        @configatron(namespace='test')
+        @configatron(namespace='test_definition')
         class TestConfig:
             test_secret: str = secret()
             test_unsecured: str = unsecured()
@@ -30,7 +26,7 @@ class TestConfigatronDefinition:
     def test_happycase_inferred_names(self):
         """Test the happy case with inferred names."""
 
-        @configatron(namespace='test')
+        @configatron(namespace='test_happycase_inferred_names')
         class TestConfig:
             test_secret: str = secret()
             test_unsecured: str = unsecured()
@@ -44,12 +40,11 @@ class TestConfigatronDefinition:
             == 'test_unsecured')
 
 
-def _make_fake_loaded_config(backend, namespace, /, **config_items):
+def _make_fake_loaded_config(namespace, /, **config_items):
     fake_config = {}
 
     for config_name, config_value in config_items.items():
-        key = RawLookupKey(
-            backend=backend, namespace=namespace, name=config_name)
+        key = RawLookupKey(namespace=namespace, name=config_name)
         fake_config[key] = config_value
 
     return fake_config
@@ -64,7 +59,7 @@ class TestConfigatronAccess:
         """Test that you can still access the actual vaues stored on the
         instance.
         """
-        @configatron(namespace='test')
+        @configatron(namespace='test_instance_access')
         class TestConfig:
             test_secret: str = secret()
             test_unsecured: str = unsecured()
@@ -75,14 +70,14 @@ class TestConfigatronAccess:
         assert test_config.test_unsecured == 'bar'
 
     @patch(
-        'configatron.core.get_loaded_config',
+        'configatron.configatron_.get_loaded_config',
         partial(
-            _make_fake_loaded_config, None, 'test',
+            _make_fake_loaded_config, 'test_class_access',
             test_secret='foo', test_unsecured='bar'))
     def test_class_access(self):
         """Make sure that the happy case access on the class succeeds.
         """
-        @configatron(namespace='test')
+        @configatron(namespace='test_class_access')
         class TestConfig:
             test_secret: str = secret()
             test_unsecured: str = unsecured()
