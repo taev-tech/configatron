@@ -8,6 +8,7 @@ from typing import (
     Any,
     Optional)
 
+import configatron._runtime_state as runtime_state
 from configatron._runtime_state import get_loaded_config
 from configatron._runtime_state import RawLookupKey
 from configatron.exceptions import ConfigatronInternalError
@@ -15,9 +16,9 @@ from configatron.exceptions import ConfigKeyNotFound
 from configatron.exceptions import InvalidConfigatronDefinition
 
 
+_DATACLASS_METADATA_KEY = 'configatron'
 # Used as a sentinel when the value doesn't appear in the config
 _MISSING = object()
-_ALL_CONFIGATRONS = {}
 
 
 def configatron(*, namespace):
@@ -27,23 +28,12 @@ def configatron(*, namespace):
     return decorator_closure
 
 
-@dataclasses.dataclass(frozen=True)
-class _DualNameKey:
-    primary_name: str
-    secondary_name: Optional[str] = None
-
-    def __iter__(self):
-        yield self.primary_name
-        if self.secondary_name is not None:
-            yield self.secondary_name
-
-
 def _make_configatron(cls, namespace):
     """This is responsible for the actual logic of assembling a
     configatron class, separated out from the decorator for ease of
     testing.
     """
-    if namespace in _ALL_CONFIGATRONS:
+    if namespace in runtime_state.ALL_CONFIGATRONS:
         raise InvalidConfigatronDefinition(
             'Cannot duplicate config namespaces!')
 
@@ -51,9 +41,8 @@ def _make_configatron(cls, namespace):
     # Dynamic configs can be mutated, so make sure we're not hashable
     configatron.__hash__ = None
 
-    keyspace = []
     for field in dataclasses.fields(configatron):
-        metadata = field.metadata.get('configatron')
+        metadata = field.metadata.get(_DATACLASS_METADATA_KEY)
         if metadata is None:
             raise InvalidConfigatronDefinition(
                 'All config fields must be a configatron field!')
@@ -70,46 +59,45 @@ def _make_configatron(cls, namespace):
         # conflict here.
         setattr(cls, field.name, value_proxy)
 
-        key = _DualNameKey(metadata.primary_name, metadata.secondary_name)
-        keyspace.append(key)
-
     configatron.__configatron_namespace__ = namespace
-    configatron.__configatron_keyspace__ = tuple(keyspace)
-    _ALL_CONFIGATRONS[namespace] = configatron
+    runtime_state.ALL_CONFIGATRONS[namespace] = configatron
 
     return configatron
 
 
-def get_complete_keyspace():
+def get_keyspace(backend):
     """Returns all possible keys, including secondaries. NOTE: this
     must be run AFTER importing all defined configatron classes!
     """
-    return tuple(_get_complete_keyspace())
+    return tuple(_get_keyspace(backend))
 
 
-def _get_complete_keyspace():
+def _get_keyspace(backend):
     """Inner iterator. Used by the above to construct a tuple."""
-    for namespace, configatron in _ALL_CONFIGATRONS.items():
-        keyspace_for_config = configatron.__configatron_keyspace__
-        for dual_name_key in keyspace_for_config:
-            for name in dual_name_key:
-                yield RawLookupKey(namespace=namespace, name=name)
+    for namespace, configatron in runtime_state.ALL_CONFIGATRONS.items():
+        for config_field in dataclasses.fields(configatron):
+            metadata = config_field.metadata[_DATACLASS_METADATA_KEY]
+            if metadata.supported_by_backend(backend):
+                for name in metadata.names():
+                    yield RawLookupKey(namespace=namespace, name=name)
 
 
-def ensure_sufficient_keyspace(lookup):
+def ensure_complete_config(lookup):
     """Checks to make sure that the lookup has values for all config
     keys. For primary/secondary, only requires a single of the pair.
     Raises if keys are missing.
     """
-    missing_keys = set()
-    for namespace, configatron in _ALL_CONFIGATRONS.items():
-        keyspace_for_config = configatron.__configatron_keyspace__
-        for dual_name_key in keyspace_for_config:
-            if not any(name in lookup for name in dual_name_key):
-                missing_keys.add(dual_name_key)
+    missing_fields = []
+    for namespace, configatron in runtime_state.ALL_CONFIGATRONS.items():
+        for config_field in dataclasses.fields(configatron):
+            metadata = config_field.metadata[_DATACLASS_METADATA_KEY]
+            if not any(
+                    RawLookupKey(namespace=namespace, name=name) in lookup
+                    for name in metadata.names()):
+                missing_fields.append(metadata)
 
-    if missing_keys:
-        raise ConfigKeyNotFound(missing_keys)
+    if missing_fields:
+        raise ConfigKeyNotFound(missing_fields)
 
     return True
 
@@ -137,7 +125,7 @@ def _collect_medatada_into_field(
     return dataclasses.field(
         default=default,
         default_factory=default_factory,
-        metadata={'configatron': metadata})
+        metadata={_DATACLASS_METADATA_KEY: metadata})
 
 
 secret = functools.partial(
@@ -154,12 +142,29 @@ class _ConfigatronMetadata:
     # creation
     primary_name: Optional[str] = None
     secondary_name: Optional[str] = None
+
     backend_kwargs: Optional[dict[str, Any]] = dataclasses.field(
         default_factory=dict)
 
     def __post_init__(self):
         if self.dynamic:
             raise NotImplementedError()
+
+    def names(self):
+        """Yields first the primary name, then any secondary name(s)
+        (but only if they exist), in order.
+        """
+        yield self.primary_name
+        if self.secondary_name is not None:
+            yield self.secondary_name
+
+    def supported_by_backend(self, backend):
+        return (
+            (self.configatron_mode is _ConfigatronMode.UNSECURED
+                and backend.allow_unsecured)
+            or (self.configatron_mode is _ConfigatronMode.SECRET
+                and backend.allow_secret)
+        )
 
 
 class _LoadedConfigatronValueProxy:

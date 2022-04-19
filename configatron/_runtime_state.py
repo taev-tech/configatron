@@ -5,6 +5,7 @@ from configatron.exceptions import ConfigNotLoaded
 
 
 _LOADED_CONFIG: ContextVar[dict] = ContextVar('_LOADED_CONFIG', default=None)
+ALL_CONFIGATRONS = {}
 
 
 def get_loaded_config(namepsace, *, allow_partial=False):
