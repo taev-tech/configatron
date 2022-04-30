@@ -74,14 +74,17 @@ class TestConfigatronDefinition:
                     config_key='bar', alt_config_keys=['oops', 'not', 'foo'])
 
 
-def _make_fake_loaded_config(namespace, /, **config_items):
-    fake_config = {}
+def _make_fake_get_loaded_config(**config_items):
+    def fake_get_loaded_config(namespace):
+        fake_config = {}
 
-    for config_name, config_value in config_items.items():
-        key = RawLookupKey(namespace=namespace, name=config_name)
-        fake_config[key] = config_value
+        for config_name, config_value in config_items.items():
+            key = RawLookupKey(namespace=namespace, name=config_name)
+            fake_config[key] = config_value
 
-    return fake_config
+        return fake_config
+
+    return fake_get_loaded_config
 
 
 class TestConfigatronAccess:
@@ -105,9 +108,7 @@ class TestConfigatronAccess:
 
     @patch(
         'configatron.configatron_.get_loaded_config',
-        partial(
-            _make_fake_loaded_config, 'test_class_access',
-            test_secret='foo', test_unsecured='bar'))
+        _make_fake_get_loaded_config(test_secret='foo', test_unsecured='bar'))
     def test_class_access_simple(self):
         """Make sure that the happy case access on the class succeeds.
         """
@@ -121,9 +122,7 @@ class TestConfigatronAccess:
 
     @patch(
         'configatron.configatron_.get_loaded_config',
-        partial(
-            _make_fake_loaded_config, 'test_class_access',
-            foo='foo', bar='bar'))
+        _make_fake_get_loaded_config(foo='foo', bar='bar'))
     def test_class_access_aliased(self):
         """Make sure that the happy case access on the class succeeds
         with explicit config keys.
@@ -138,9 +137,7 @@ class TestConfigatronAccess:
 
     @patch(
         'configatron.configatron_.get_loaded_config',
-        partial(
-            _make_fake_loaded_config, 'test_class_access',
-            foo='foo', not_bar='bar'))
+        _make_fake_get_loaded_config(foo='foo', not_bar='bar'))
     def test_class_access_from_alt(self):
         """Make sure that the happy case access on the class succeeds
         with explicit config keys.

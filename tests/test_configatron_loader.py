@@ -44,6 +44,7 @@ class TestConfigatronLoader:
 
         with loader.load():
             state = _LOADED_CONFIG.get()
+            assert state.fully_loaded
             assert key1 in state.lookup
             assert state.lookup[key1] == 'foo'
             assert key2 in state.lookup

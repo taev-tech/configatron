@@ -34,6 +34,7 @@ class ConfigatronLoader:
                 lookup.maps.append(remaining_backend.load(keyspace=keyspace))
 
             ensure_complete_config(lookup)
+            state.fully_loaded = True
 
             yield self
         finally:

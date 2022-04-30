@@ -1,5 +1,4 @@
 import collections
-import functools
 import pathlib
 
 try:
@@ -27,7 +26,7 @@ class TomlBackend:
             expected_namespaces.add(key.namespace)
             expected_keys[key.namespace].add(key.name)
 
-        with self._path.read('rb') as fd:
+        with self._path.open('rb') as fd:
             raw_toml_dict = tomllib.load(fd)
 
         transformed_lookup = {}

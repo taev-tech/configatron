@@ -189,7 +189,7 @@ class _LoadedConfigatronValueProxy:
                 'Somehow you managed to directly access the configatron ' +
                 'value proxy? Please report to configatron maintainers!')
 
-        loaded_config = get_loaded_config()
+        loaded_config = get_loaded_config(self._namespace)
 
         loaded_value = _MISSING
         for key_name in self._metadata.config_keys():
