@@ -11,6 +11,7 @@ from configatron.configatron_ import unsecured
 from configatron.configatron_ import get_keyspace
 from configatron.configatron_ import ensure_complete_config
 from configatron.exceptions import ConfigKeyNotFound
+from configatron.exceptions import InvalidConfigatronDefinition
 
 
 class TestConfigatronDefinition:
@@ -37,12 +38,40 @@ class TestConfigatronDefinition:
             test_unsecured: str = unsecured()
 
         assert (
-            _get_metadata(TestConfig, 'test_secret').primary_name
+            _get_metadata(TestConfig, 'test_secret').config_key
             == 'test_secret')
 
         assert (
-            _get_metadata(TestConfig, 'test_unsecured').primary_name
+            _get_metadata(TestConfig, 'test_unsecured').config_key
             == 'test_unsecured')
+
+    def test_fails_with_duplicate_primary_keys(self):
+        """Make sure a config with duplicate primary config keys is
+        considered invalid.
+        """
+        with pytest.raises(InvalidConfigatronDefinition):
+            @configatron(namespace='test_definition')
+            class TestConfig:
+                test_secret: str = secret(config_key='foo')
+                test_unsecured: str = unsecured(config_key='foo')
+
+    def test_fails_with_duplicate_alt_keys(self):
+        """Make sure a config with duplicate alternate config keys is
+        considered invalid.
+        """
+        with pytest.raises(InvalidConfigatronDefinition):
+            @configatron(namespace='test_definition')
+            class TestConfig:
+                test_secret: str = secret(config_key='foo')
+                test_unsecured: str = unsecured(
+                    config_key='bar', alt_config_keys=['foo'])
+
+        with pytest.raises(InvalidConfigatronDefinition):
+            @configatron(namespace='test_definition_2')
+            class TestConfig2:
+                test_secret: str = secret(config_key='foo')
+                test_unsecured: str = unsecured(
+                    config_key='bar', alt_config_keys=['oops', 'not', 'foo'])
 
 
 def _make_fake_loaded_config(namespace, /, **config_items):
@@ -79,13 +108,48 @@ class TestConfigatronAccess:
         partial(
             _make_fake_loaded_config, 'test_class_access',
             test_secret='foo', test_unsecured='bar'))
-    def test_class_access(self):
+    def test_class_access_simple(self):
         """Make sure that the happy case access on the class succeeds.
         """
         @configatron(namespace='test_class_access')
         class TestConfig:
             test_secret: str = secret()
             test_unsecured: str = unsecured()
+
+        assert TestConfig.test_secret == 'foo'
+        assert TestConfig.test_unsecured == 'bar'
+
+    @patch(
+        'configatron.configatron_.get_loaded_config',
+        partial(
+            _make_fake_loaded_config, 'test_class_access',
+            foo='foo', bar='bar'))
+    def test_class_access_aliased(self):
+        """Make sure that the happy case access on the class succeeds
+        with explicit config keys.
+        """
+        @configatron(namespace='test_class_access')
+        class TestConfig:
+            test_secret: str = secret(config_key='foo')
+            test_unsecured: str = unsecured(config_key='bar')
+
+        assert TestConfig.test_secret == 'foo'
+        assert TestConfig.test_unsecured == 'bar'
+
+    @patch(
+        'configatron.configatron_.get_loaded_config',
+        partial(
+            _make_fake_loaded_config, 'test_class_access',
+            foo='foo', not_bar='bar'))
+    def test_class_access_from_alt(self):
+        """Make sure that the happy case access on the class succeeds
+        with explicit config keys.
+        """
+        @configatron(namespace='test_class_access')
+        class TestConfig:
+            test_secret: str = secret(config_key='foo')
+            test_unsecured: str = unsecured(
+                config_key='bar', alt_config_keys=['oops', 'not_bar'])
 
         assert TestConfig.test_secret == 'foo'
         assert TestConfig.test_unsecured == 'bar'

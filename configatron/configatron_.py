@@ -4,9 +4,9 @@ __init__ and included in the toplevel package __all__.
 import dataclasses
 import enum
 import functools
-from typing import (
-    Any,
-    Optional)
+from typing import Any
+from typing import Optional
+from collections.abc import Iterable
 
 import configatron._runtime_state as runtime_state
 from configatron._runtime_state import get_loaded_config
@@ -41,14 +41,20 @@ def _make_configatron(cls, namespace):
     # Dynamic configs can be mutated, so make sure we're not hashable
     configatron.__hash__ = None
 
+    flattened_config_keys = set()
     for field in dataclasses.fields(configatron):
         metadata = field.metadata.get(_DATACLASS_METADATA_KEY)
         if metadata is None:
             raise InvalidConfigatronDefinition(
                 'All config fields must be a configatron field!')
 
-        if metadata.primary_name is None:
-            metadata.primary_name = field.name
+        if metadata.config_key is None:
+            metadata.config_key = field.name
+
+        if any(key in flattened_config_keys for key in metadata.config_keys()):
+            raise InvalidConfigatronDefinition(
+                'Cannot have duplicate config keys within the same namespace!')
+        flattened_config_keys.update(metadata.config_keys())
 
         value_proxy = _LoadedConfigatronValueProxy(
             namespace=namespace, metadata=metadata)
@@ -78,7 +84,7 @@ def _get_keyspace(backend):
         for config_field in dataclasses.fields(configatron):
             metadata = config_field.metadata[_DATACLASS_METADATA_KEY]
             if metadata.supported_by_backend(backend):
-                for name in metadata.names():
+                for name in metadata.config_keys():
                     yield RawLookupKey(namespace=namespace, name=name)
 
 
@@ -93,7 +99,7 @@ def ensure_complete_config(lookup):
             metadata = config_field.metadata[_DATACLASS_METADATA_KEY]
             if not any(
                     RawLookupKey(namespace=namespace, name=name) in lookup
-                    for name in metadata.names()):
+                    for name in metadata.config_keys()):
                 missing_fields.append(metadata)
 
     if missing_fields:
@@ -110,7 +116,7 @@ class _ConfigatronMode(enum.Enum):
 def _collect_medatada_into_field(
         *, _configatron_mode, default=dataclasses.MISSING,
         default_factory=dataclasses.MISSING, dynamic=False,
-        primary_name=None, secondary_name=None, backend_kwargs=None):
+        config_key=None, alt_config_keys=None, backend_kwargs=None):
     '''Collect all of the Configatron-relevant metadata and package it
     into a single object, returning a dataclass field with the metadata
     stored there as, well, metadata.
@@ -118,8 +124,8 @@ def _collect_medatada_into_field(
     metadata = _ConfigatronMetadata(
         configatron_mode=_configatron_mode,
         dynamic=dynamic,
-        primary_name=primary_name,
-        secondary_name=secondary_name,
+        config_key=config_key,
+        alt_config_keys=alt_config_keys,
         backend_kwargs=backend_kwargs)
 
     return dataclasses.field(
@@ -140,8 +146,8 @@ class _ConfigatronMetadata:
     dynamic: bool
     # Note: if this is None, we will infer it based on the field name during
     # creation
-    primary_name: Optional[str] = None
-    secondary_name: Optional[str] = None
+    config_key: Optional[str] = None
+    alt_config_keys: Optional[Iterable[str]] = None
 
     backend_kwargs: Optional[dict[str, Any]] = dataclasses.field(
         default_factory=dict)
@@ -150,13 +156,13 @@ class _ConfigatronMetadata:
         if self.dynamic:
             raise NotImplementedError()
 
-    def names(self):
-        """Yields first the primary name, then any secondary name(s)
+    def config_keys(self):
+        """Yields first the primary key, then any alternate key(s)
         (but only if they exist), in order.
         """
-        yield self.primary_name
-        if self.secondary_name is not None:
-            yield self.secondary_name
+        yield self.config_key
+        if self.alt_config_keys is not None:
+            yield from self.alt_config_keys
 
     def supported_by_backend(self, backend):
         return (
@@ -185,16 +191,14 @@ class _LoadedConfigatronValueProxy:
 
         loaded_config = get_loaded_config()
 
-        primary_key = RawLookupKey(
-            namespace=self._namespace,
-            name=self._metadata.primary_name)
-        secondary_key = RawLookupKey(
-            namespace=self._namespace,
-            name=self._metadata.secondary_name)
+        loaded_value = _MISSING
+        for key_name in self._metadata.config_keys():
+            lookup_key = RawLookupKey(namespace=self._namespace, name=key_name)
+            loaded_value = loaded_config.get(lookup_key, _MISSING)
 
-        loaded_value = loaded_config.get(primary_key, _MISSING)
-        if loaded_value is _MISSING:
-            loaded_value = loaded_config.get(secondary_key, _MISSING)
+            if loaded_value is not _MISSING:
+                break
+
         if loaded_value is _MISSING:
             raise ConfigatronInternalError(
                 'Configatron allowed you to load an incomplete config!')
