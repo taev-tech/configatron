@@ -6,17 +6,22 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 
-from configatron.exceptions import ConfigKeyNotFound
 from configatron._runtime_state import RawLookupKey
+from configatron.exceptions import ConfigKeyNotFound
 
 
 class TomlBackend:
+    """A config backend that uses a toml-formatted config file.
+    Namespaces are interpreted as the names of toplevel dictionaries in
+    the toml file, and keys are the keys in those dictionaries.
+    """
 
     allow_secret = False
     allow_unsecured = True
 
-    def __init__(self, path):
-        self._path = pathlib.Path(path)
+    def __init__(self, *args, configfile, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._path = pathlib.Path(configfile)
 
     def load(self, keyspace):
         expected_namespaces = set()

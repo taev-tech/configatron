@@ -15,3 +15,50 @@ tomli = { version = "^2.0.1", python = "< 3.11" }
 [tool.poetry.dev-dependencies]
 ipython = "^7.29.0"
 pytest = "^6.2.5"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.0.239"
+refurb = "^1.10.0"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = [
+    "tests/unittests",
+]
+addopts = "--import-mode=importlib"
+
+[tool.ruff]
+dummy-variable-rgx = "^__$"
+line-length = 79
+select = [
+    "F",
+    "E",
+    "W",
+    "C90",
+    "B",
+    "I",
+    "N",
+    "YTT",
+    "S",
+    "A",
+    "C4",
+    "ICN",
+    "Q003",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "RUF"
+]
+ignore = [
+    "N818"
+]
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S"]
+
+[tool.ruff.isort]
+force-single-line = true
+
+[tool.refurb]
+ignore = []

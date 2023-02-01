@@ -4,17 +4,16 @@ __init__ and included in the toplevel package __all__.
 import dataclasses
 import enum
 import functools
+from collections.abc import Iterable
 from typing import Any
 from typing import Optional
-from collections.abc import Iterable
 
 import configatron._runtime_state as runtime_state
-from configatron._runtime_state import get_loaded_config
 from configatron._runtime_state import RawLookupKey
+from configatron._runtime_state import get_loaded_config
 from configatron.exceptions import ConfigatronInternalError
 from configatron.exceptions import ConfigKeyNotFound
 from configatron.exceptions import InvalidConfigatronDefinition
-
 
 _DATACLASS_METADATA_KEY = 'configatron'
 # Used as a sentinel when the value doesn't appear in the config

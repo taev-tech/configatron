@@ -1,9 +1,9 @@
+from app import server
+
+from configatron import ConfigatronLoader
 from configatron import configatron
 from configatron import secret
 from configatron import unsecured
-from configatron import ConfigatronLoader
-
-from app import server
 
 
 @configatron(namespace='server')

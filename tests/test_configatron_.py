@@ -1,15 +1,14 @@
 import dataclasses
-from functools import partial
 from unittest.mock import patch
 
 import pytest
 
 from configatron._runtime_state import RawLookupKey
 from configatron.configatron_ import configatron
+from configatron.configatron_ import ensure_complete_config
+from configatron.configatron_ import get_keyspace
 from configatron.configatron_ import secret
 from configatron.configatron_ import unsecured
-from configatron.configatron_ import get_keyspace
-from configatron.configatron_ import ensure_complete_config
 from configatron.exceptions import ConfigKeyNotFound
 from configatron.exceptions import InvalidConfigatronDefinition
 
@@ -206,8 +205,8 @@ class TestGetKeyspace:
             allow_unsecured = True
 
         keyspace = list(get_keyspace(FakeBackend))
-        assert len(keyspace) == 2
-        key_names = set(key.name for key in keyspace)
+        assert len(keyspace) == 2   # noqa: PLR2004
+        key_names = {key.name for key in keyspace}
         assert 'test_secret' in key_names
         assert 'test_unsecured' in key_names
 

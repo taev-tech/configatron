@@ -3,7 +3,6 @@ from contextvars import ContextVar
 
 from configatron.exceptions import ConfigNotLoaded
 
-
 _LOADED_CONFIG: ContextVar[dict] = ContextVar('_LOADED_CONFIG', default=None)
 ALL_CONFIGATRONS = {}
 
