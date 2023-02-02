@@ -11,3 +11,9 @@ General-purpose configuration based on annotations. Uses TOML files for plaintex
 +   what are allowed values for namespaces?
 +   same question, but for key names
 +   does the cmdline backend support quoting for values?
+
+## Backend notes
+
+### Keyring:
+
++   currently only tested on windows; need to test on osx
