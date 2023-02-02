@@ -21,6 +21,7 @@ ipython = ">=7.29.0"
 ruff = ">=0.0.239"
 refurb = ">=1.10.0"
 pytest = ">=7.2.1"
+moto = {extras = ["secretsmanager"], version = "^4.1.1"}
 
 [tool.poetry.extras]
 aws-sm = ["boto3"]
