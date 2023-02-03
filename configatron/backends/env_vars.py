@@ -1,4 +1,7 @@
 import os
+import re
+
+COERCER = re.compile(r'[^A-z0-9_]')
 
 
 class EnvVarBackend:
@@ -10,6 +13,14 @@ class EnvVarBackend:
     Namespaces are interpreted as prefixes to the environment variable
     key -- so for example ``namespace.foo`` would be converted to
     NAMESPACE_FOO.
+
+    Note that we will also coalesce special characters within the
+    namespace. Allowed characters are: [a-zA-Z0-9_]; anything else will
+    be converted to an underscore.
+
+    Many platforms don't support environment variables starting with
+    numbers. If they're there, we'll load them successfully, but you
+    may not be able to set them.
     """
 
     allow_secret = True
@@ -19,7 +30,7 @@ class EnvVarBackend:
         expected_keys = {}
 
         for key in keyspace:
-            env_key = f'{key.namespace}_{key.name}'.upper()
+            env_key = COERCER.sub('_', f'{key.namespace}_{key.name}'.upper())
             expected_keys[env_key] = key
 
         found_values = {}

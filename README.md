@@ -11,6 +11,7 @@ General-purpose configuration based on annotations. Uses TOML files for plaintex
 +   what are allowed values for namespaces?
 +   same question, but for key names
 +   does the cmdline backend support quoting for values?
++   should you also support AWS parameter store?
 
 ## Backend notes
 
