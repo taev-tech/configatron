@@ -6,7 +6,7 @@ the supported platforms.
 import keyring
 import pytest
 
-from configatron.backends.local_secret import LocalSecretBackend
+from configatron.backends.os_keyvault import OSKeyVaultBackend
 from configatron.configatron_loader import ConfigatronLoader
 
 CONFIG_KEYS = [
@@ -30,7 +30,7 @@ def populate_local_secrets():
 
 
 def test_loading(sample_config_only_secret, populate_local_secrets):
-    backend = LocalSecretBackend()
+    backend = OSKeyVaultBackend()
     loader = ConfigatronLoader([backend])
 
     with loader.load():

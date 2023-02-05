@@ -1,7 +1,7 @@
 import keyring
 
 
-class LocalSecretBackend:
+class OSKeyVaultBackend:
     """A config backend that uses the keyring library for storage. That
     means on OSX you'll use the keychain, on windows the credential
     locker, and on linux... well, linux gets complicated; see the

@@ -25,7 +25,7 @@ moto = {extras = ["secretsmanager"], version = "^4.1.1"}
 
 [tool.poetry.extras]
 aws-sm = ["boto3"]
-keyring = ["keyring"]
+os-keyvault = ["keyring"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
