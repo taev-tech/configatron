@@ -1,7 +1,7 @@
 import pathlib
 import tempfile
 
-from configatron.backends.toml import TomlBackend
+from configatron.backends.cfgfile_toml import TomlFileBackend
 from configatron.configatron_loader import ConfigatronLoader
 
 CONFIG_TOML = '''
@@ -19,7 +19,7 @@ def test_loading(sample_config_only_unsecured):
         config_path = tempdir / 'sample_config_only_unsecured.toml'
         config_path.write_text(CONFIG_TOML)
 
-        backend = TomlBackend(configfile=config_path)
+        backend = TomlFileBackend(configfile=config_path)
         loader = ConfigatronLoader([backend])
 
         with loader.load():

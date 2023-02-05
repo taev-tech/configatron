@@ -10,7 +10,7 @@ from configatron._runtime_state import RawLookupKey
 from configatron.exceptions import ConfigKeyNotFound
 
 
-class TomlBackend:
+class TomlFileBackend:
     """A config backend that uses a toml-formatted config file.
     Namespaces are interpreted as the names of toplevel dictionaries in
     the toml file, and keys are the keys in those dictionaries.
