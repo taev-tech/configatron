@@ -1,0 +1,6 @@
+++  background service for configuration loading and reloading
+++  pydantic for coercion, but **optional**. have two separate management
+    schemes, one with coercion and one without
+++  ability to specify post-load callbacks **on the management system** as
+    a workaround for lacking coercion (this could potentially also be used
+    to do the coercion in the first place)

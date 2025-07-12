@@ -1,0 +1,3 @@
+package_name = "configatron"
+package_desc = "Extensible, secure configuration based on runtime type annotations"
+min_python_version = "3.12"

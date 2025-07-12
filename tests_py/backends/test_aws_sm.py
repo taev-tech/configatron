@@ -5,7 +5,7 @@ the supported platforms.
 """
 import boto3
 import pytest
-from moto import mock_secretsmanager
+from moto import mock_aws
 
 from configatron.backends.aws_sm import AWSSecretsManagerBackend
 from configatron.configatron_loader import ConfigatronLoader
@@ -20,7 +20,7 @@ CONFIG_KEYS = [
 
 @pytest.fixture
 def populate_secrets():
-    with mock_secretsmanager():
+    with mock_aws():
         session = boto3.session.Session(region_name='us-west-2')
         client = session.client(service_name='secretsmanager')
 
