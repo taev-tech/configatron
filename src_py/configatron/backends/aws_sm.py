@@ -28,8 +28,8 @@ class AWSSecretsManagerBackend:
     def __init__(
             self,
             *args,
-            boto3_session_kwargs: dict = None,
-            boto3_client_kwargs: dict = None,
+            boto3_session_kwargs: dict | None = None,
+            boto3_client_kwargs: dict | None = None,
             **kwargs):
         super().__init__(*args, **kwargs)
         # I'll give you a dollar if you start supporting null coercion
@@ -63,6 +63,7 @@ class AWSSecretsManagerBackend:
                     'Client error while trying to load configatron secret ' +
                     'from AWS secrets manager',
                     exc_info=exc)
+                return {}
 
             # Must be either a string or a binary result
             if 'SecretString' in boto3_response:

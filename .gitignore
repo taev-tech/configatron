@@ -133,3 +133,4 @@ yarn-error.log
 /__sapper__/
 .npmrc
 _prompt/
+scratchpad.py

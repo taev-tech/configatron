@@ -3,19 +3,16 @@ from __future__ import annotations
 import functools
 import sys
 from collections.abc import Callable
-from collections.abc import Sequence
 from collections.abc import Mapping
+from collections.abc import Sequence
 from dataclasses import _MISSING_TYPE
 from dataclasses import Field
 from dataclasses import dataclass
 from dataclasses import field
-from dataclasses import fields
-from typing import Annotated
 from typing import Any
 from typing import Literal
 from typing import dataclass_transform
 from typing import overload
-
 
 # The following is adapted directly from typeshed. We did some formatting
 # updates, and inserted our prerenderer param.
@@ -227,6 +224,6 @@ class ConfigMeta(type):
             ...
     """
 
-    def __invert__[T](self: type[T]) -> T:
+    def __invert__[T](cls: type[T]) -> T:
         # TODO: this needs to fetch from the registry!
-        return self()
+        return cls()

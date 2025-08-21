@@ -1,3 +1,4 @@
+# ruff: noqa: S106, S105
 import dataclasses
 from unittest.mock import patch
 
@@ -100,7 +101,7 @@ class TestConfigatronAccess:
             test_secret: str = secret()
             test_unsecured: str = unsecured()
 
-        test_config = TestConfig(test_secret='foo', test_unsecured='bar')
+        test_config = TestConfig(test_secret='foo', test_unsecured='bar')  # type: ignore
 
         assert test_config.test_secret == 'foo'
         assert test_config.test_unsecured == 'bar'
@@ -205,7 +206,7 @@ class TestGetKeyspace:
             allow_unsecured = True
 
         keyspace = list(get_keyspace(FakeBackend))
-        assert len(keyspace) == 2   # noqa: PLR2004
+        assert len(keyspace) == 2
         key_names = {key.name for key in keyspace}
         assert 'test_secret' in key_names
         assert 'test_unsecured' in key_names
