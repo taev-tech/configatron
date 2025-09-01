@@ -6,7 +6,7 @@ the supported platforms.
 import keyring
 import pytest
 
-from configatron.backends.os_keyvault import OSKeyVaultBackend
+from configatron._backends.os_keyvault import OSKeyVaultBackend
 from configatron.configatron_loader import ConfigatronLoader
 
 CONFIG_KEYS = [

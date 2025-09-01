@@ -7,7 +7,7 @@ import boto3
 import pytest
 from moto import mock_aws
 
-from configatron.backends.aws_sm import AWSSecretsManagerBackend
+from configatron._backends.aws_sm import AWSSecretsManagerBackend
 from configatron.configatron_loader import ConfigatronLoader
 
 CONFIG_KEYS = [

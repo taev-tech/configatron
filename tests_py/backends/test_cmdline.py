@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from configatron.backends.cmdline import CmdlineBackend
+from configatron._backends.cmdline import CmdlineBackend
 from configatron.configatron_loader import ConfigatronLoader
 
 CONFIG_ARGV = [

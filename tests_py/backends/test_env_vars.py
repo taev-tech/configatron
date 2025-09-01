@@ -1,7 +1,7 @@
 import os
 from unittest.mock import patch
 
-from configatron.backends.env_vars import EnvVarBackend
+from configatron._backends.env_vars import EnvVarBackend
 from configatron.configatron_loader import ConfigatronLoader
 
 CONFIG_ENVIRON = {

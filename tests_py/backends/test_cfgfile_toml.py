@@ -1,7 +1,7 @@
 import pathlib
 import tempfile
 
-from configatron.backends.cfgfile_toml import TomlFileBackend
+from configatron._backends.cfgfile_toml import TomlFileBackend
 from configatron.configatron_loader import ConfigatronLoader
 
 CONFIG_TOML = '''
