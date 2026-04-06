@@ -7,8 +7,8 @@ requires-python = ">=3.12.0"
 readme = "README.md"
 
 dependencies = [
+    "dceiref>=2025.11.9.0",
     "docnote>=2025.5.26.1",
-    # "pydantic>=2.11.7",
 ]
 
 [project.optional-dependencies]
@@ -21,9 +21,7 @@ async = [
 test = [
     "pytest >= 8.1.1",
     "pytest-anyio>=0.0.0",
-    "moto[secretsmanager] >= 4.1.1",
     "configatron_testutils",
-    "keyring>=25.6.0",
 ]
 
 lint = [
@@ -62,6 +60,7 @@ testpaths = [
 ]
 addopts = "--import-mode=importlib"
 cache_dir = '/tmp/pytest_cache'
+python_files = ["*.test.py", "test*.py"]
 
 [tool.ruff]
 line-length = 79

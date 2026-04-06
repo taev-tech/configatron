@@ -1,61 +1,28 @@
-from unittest.mock import patch
-
 import pytest
 
-from configatron.configatron_ import configatron
-from configatron.configatron_ import secret
-from configatron.configatron_ import unsecured
+from configatron._registry import create_registry_context
+from configatron.manager import create_config_context
 
 
 @pytest.fixture(autouse=True)
-def clean_configatron_registry():
-    with patch('configatron._runtime_state.ALL_CONFIGATRONS', {}):
-        yield
+def clean_config_context():
+    with create_config_context() as ctx:
+        yield ctx
 
 
-@pytest.fixture
-def sample_config(clean_configatron_registry):
-    """Define a sample config for use. Depends on the clean configatron
-    registry.
+@pytest.fixture(autouse=True, scope='session')
+def clean_session_config_registry():
+    """This is here just as added insurance in case we ever define
+    configs at the test-module level.
     """
-    @configatron(namespace='sample_config')
-    class TestConfig:
-        one: str = secret(config_key='one')
-        two: str = secret(config_key='two')
-        three: str = unsecured(config_key='three')
-        four: str = unsecured(config_key='four')
-
-    return TestConfig
+    with create_registry_context() as ctx:
+        yield ctx
 
 
-@pytest.fixture
-def sample_config_only_unsecured(clean_configatron_registry):
-    """Define a sample config for use. Depends on the clean configatron
-    registry.
-    """
-    @configatron(namespace='sample_config_only_unsecured')
-    class TestConfig:
-        one: str = unsecured(config_key='one')
-        two: str = unsecured(config_key='two')
-        three: str = unsecured(config_key='three')
-        four: str = unsecured(config_key='four')
-
-    return TestConfig
-
-
-@pytest.fixture
-def sample_config_only_secret(clean_configatron_registry):
-    """Define a sample config for use. Depends on the clean configatron
-    registry.
-    """
-    @configatron(namespace='sample_config_only_secret')
-    class TestConfig:
-        one: str = secret(config_key='one')
-        two: str = secret(config_key='two')
-        three: str = secret(config_key='three')
-        four: str = secret(config_key='four')
-
-    return TestConfig
+@pytest.fixture(autouse=True)
+def clean_single_config_registry():
+    with create_registry_context() as ctx:
+        yield ctx
 
 
 _TEST_PHASES: dict[None | str, int] = {

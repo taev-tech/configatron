@@ -5,22 +5,35 @@ class ConfigatronInternalError(Exception):
     """
 
 
-class ConfigatronError(Exception):
+class ConfigatronException(Exception):
     """Base exception class used for errors from client code."""
 
 
-class InvalidConfigatronDefinition(ConfigatronError):
-    """Raised when something is wrong with the configatron config
-    definitions.
+class MissingConcreteConfigs(ConfigatronException):
+    """Raised when verifying the config registry, if there aren't
+    concrete configs defined for every abstract config class.
     """
 
 
-class ConfigNotLoaded(ConfigatronError):
+class MultipleConcreteConfigsForAbstract(ConfigatronException):
+    """Raised when an application defines multiple concrete configs for
+    the same abstract config class.
+    """
+
+
+class MissingAbstractFields(ConfigatronException, TypeError):
+    """Raised when a concrete config class is missing abstract fields,
+    and therefore doesn't satisfy the abstract config protocol.
+    """
+
+
+class ConfigNotLoaded(ConfigatronException):
     """Raised when client code tries to access a config VALUE before
     it's been loaded.
     """
 
 
-class ConfigKeyNotFound(ConfigatronError, KeyError):
-    """Raised when a config key is not found for a particular backend.
+class DuplicateConfigNamespace(ConfigatronException):
+    """Raised if two registered config classes attempt to use the same
+    namespace.
     """

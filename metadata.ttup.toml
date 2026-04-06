@@ -1,3 +1,4 @@
+tt_project_id = "019ce841-b94d-7272-9e9f-99aeff85c648"
 package_name = "configatron"
 package_desc = "Extensible, secure configuration based on runtime type annotations"
 min_python_version = "3.12"
