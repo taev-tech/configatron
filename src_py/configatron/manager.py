@@ -17,7 +17,9 @@ from typing import Annotated
 from typing import Any
 from typing import cast
 
+from docnote import DocnoteConfig
 from docnote import Note
+from docnote import docnote
 
 from configatron._analysis import FieldAnalysis
 from configatron._analysis import analyze_cfg_cls
@@ -304,6 +306,8 @@ class CfgManager:
         """
         return self._analysis
 
+    # This isn't implemented yet, so exclude it from the docs
+    @docnote(DocnoteConfig(include_in_docs=False))
     @contextmanager
     def poll_sync(self, refresh_after_max: float):
         """The sync version of the config manager runs as a background
@@ -326,6 +330,8 @@ class CfgManager:
         ++  then repeat infinitely for each of the deadlines
         """
 
+    # This isn't implemented yet, so exclude it from the docs
+    @docnote(DocnoteConfig(include_in_docs=False))
     @asynccontextmanager
     async def poll_async(self, refresh_after_max: float):
         """The async version of the config manager runs as a background

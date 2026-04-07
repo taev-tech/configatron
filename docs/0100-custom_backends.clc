@@ -1,0 +1,61 @@
+> Implementing a custom backend
+__doc_meta__: true
+description: 'Creating a custom backend'
+<
+
+Creating a custom backend for configatron allows you full control over config
+loading. The process is simple: you need to implement a subclass of the
+``configatron.backends.CfgBackend`` protocol:
+
+>
+__embed__: 'code/python'
+    from typing import Any
+
+    from configatron.backends import CfgBackend
+    from configatron.backends import KeyspaceSummary
+    from configatron.types import CfgFieldDesc
+
+
+    class SecretsManagerBackend(CfgBackend):
+        """A custom config backend that contacts a cloud provider's secrets
+        manager.
+        """
+        ALLOW_SECRET = True
+        ALLOW_PLAINTEXT = False
+
+        def load_sync(
+                self,
+                request: KeyspaceSummary,
+                full_keyspace: KeyspaceSummary
+                ) -> dict[CfgFieldDesc, Any]:
+            """Required to support sync loading, optional for async-only.
+            """
+            raise NotImplementedError('Your implementation goes here!')
+
+        async def load_async(
+                self,
+                request: KeyspaceSummary,
+                full_keyspace: KeyspaceSummary
+                ) -> dict[CfgFieldDesc, Any]:
+            """Required to support async loading, optional for sync-only.
+            """
+            raise NotImplementedError('Your implementation goes here!')
+
+Note that ``request`` indicates the config fields currently being requested,
+and ``full_keyspace`` indicates all possible config fields for that backend.
+During initial config loading, these values will be the same; however, if and
+when ``configatron`` implements dynamic config polling, the full keyspace is
+included so that backends can preemptively update non-expired keys, if doing so
+would be effectively free anyways.
+
+For example, if you're loading all of your config values from a json file, then
+you're going to be downloading the whole json file regardless. So if the backend
+gets a request to update a single config field from the file, it might as well
+return any other fields from that value at the same time.
+
+Note that you should set the values of ``ALLOW_SECRET`` and ``ALLOW_PLAINTEXT``
+according to your actual needs. Backends that don't support secrets will never
+be asked to load a field declared as secret (ie, it will never appear in the
+``request``, nor the ``full_keyspace``). If the backend nonetheless includes
+a value declared as secret, it will be ignored by the config manager during
+loading.

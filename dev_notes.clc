@@ -1,0 +1,29 @@
+**Usage notes:**
+++  need to be careful with mixins
+    ++  the parentmost class with ``metaclass=CfgMeta`` must **always be the
+        abstract config!** if you want to use mixin classes to define configs,
+        you'll need to declare them as plain ``Protocol`` classes **without**
+        the metaclass. (You can still use ``Secret`` and it will still be
+        detected correctly!)
+++  defining extra fields on a concrete config class is permissible
+    ++  this can be useful if you're importing a library and want to add some
+        additional config info to its namespace based on your particular
+        use case for the library
+
+**Dev notes:**
+++  might want to relax the constraint forcing unique namespaces for concrete
+    configs (maybe with a kwarg for strict vs non-strict). this would be **by
+    far** the most pragmatic way of handling "okay but I want to have multiple
+    abstract configs in the same namespace"; the alternative is a bunch of
+    really messy mapping between abstract and config, and would require a
+    major rewrite of the internal workings
+    ++  one caveat here is that you'd need to be careful about whether or not
+        to allow duplicate field names for separate configs on the same
+        namespace
+    ++  tbh though... namespaces are only meaningful if the backend decides
+        they are. the better option here might just to write a custom backend
+        that merges namespaces -- for example ``foo.bar`` and ``foo.baz`` both
+        come from ``foo`` -- on an application-specific basis
+    ++  **however, it might be smart to allow duplicate namespace=None classes.**
+        not sure either way about this one. it would take some thought as well.
+

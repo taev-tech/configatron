@@ -31,6 +31,7 @@ lint = [
 repl = [
     "wat-inspector >= 0.3.2",
     "py-spy>=0.4.0",
+    "pydantic>=2.12.5",
 ]
 
 [tool.uv]

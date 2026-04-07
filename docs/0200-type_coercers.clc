@@ -1,0 +1,61 @@
+> Integrating with runtime types
+__doc_meta__: true
+description: 'Integrating with runtime types, eg pydantic'
+<
+
+Sometimes it's useful to define richer configuration types than are supported
+by the underlying backend. In this case, you can define a type coercer,
+which implements the ``configatron.types.TypeCoercer`` protocol -- a callable
+that receives a ``config_cls`` and ``value`` as arguments, and returns an
+instance of the config class after any type coercion is performed.
+
+This allows application developers to use (for example) pydantic, without
+introducing a dependency on pydantic within the libraries they import that
+use configatron for configuration.
+
+For example:
+
+>
+__embed__: 'code/python'
+    from typing import Any
+
+    from pydantic import TypeAdapter
+
+
+    def my_coercer[T](config_cls: type[T], value: Any) -> T:
+        # Note: for better performance, you would want to cache the created
+        # type adapter, so that subsequence coercion calls can reuse it
+        adapter = TypeAdapter(config_cls)
+        return adapter.validate_python(value)
+
+
+    # Later, when creating your config manager...
+    cfg_manager = CfgManager(
+        MyConfigImpl,
+        backends=...,
+        type_coercer=my_coercer)
+
+
+This will use the pydantic type adapter to coerce the types received from the
+backend into the types you declared in the config implementation's
+``ext_dataclass``, just as you'd expect. For example, using the config schema
+defined in the quickstart, and the memory backend:
+
+>
+__embed__: 'code/python'
+    from configatron.prebaked.backends.memory import MemoryBackend
+    from configatron.prebaked.backends.memory import MemoryBackendKey
+    test_backend = MemoryBackend({
+        MemoryBackendKey('my.app', 'host', 'host'): 'localhost',
+        # NOTE THAT THE PORT NUMBER IS A STRING!
+        MemoryBackendKey('my.app', 'port', 'port'): '7007',
+        MemoryBackendKey('my.app', 'app_secret', 'COOKIE_SECRET'): 'super secret'})
+
+    cfg_manager = CfgManager(
+        MyConfigImpl,
+        backends={'env_vars': test_backend},
+        type_coercer=my_coercer)
+    cfg_manager.load_once_sync()
+
+    # Note that the port has been coerced into an integer!
+    assert (~MyConfigImpl).port == 7007

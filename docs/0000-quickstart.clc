@@ -1,0 +1,179 @@
+> Quickstart guide
+__doc_meta__: true
+description: 'Getting started with configatron'
+<
+
+> I'm a library developer, and I want to use Configatron for my configs.
+    At a high level, the strategy is:
+    ++  Define a configuration protocol within your library
+    ++  Reference that protocol when accessing configs, either by the
+        ``~MyConfigClass`` shorthand or by ``get_active_cfg``
+    ++  Library users create a concrete implementation of your protocol
+        class as an ``ext_dataclass`` using ``dcei``, and are responsible
+        for configuring their own config backends
+    ++  If they want to use their own configuration mechanisms, they can always
+        use an instance of ``configatron.prebaked.backends.memory.MemoryBackend``
+        as an adapter
+
+    >
+    __embed__: 'code/python'
+        from typing import Protocol
+
+        from configatron import CfgMeta
+        from configatron import Secret
+
+
+        class MyLibraryConfig(Protocol, metaclass=CfgMeta):
+            host: str
+            port: int
+            app_secret: Secret[str]
+
+
+        async def my_library_code(server):
+            # Alternate spelling: ``config = get_active_cfg(MyLibraryConfig)``
+            config = ~MyLibraryConfig
+
+            async with server.bind([f'{config.host}:{config.port}']):
+                # Concise inline references are supported
+                await server.set_secret((~MyLibraryConfig).app_secret)
+
+> I'm importing a library that uses configatron for its configs, and need to
+> specify them.
+    At a high level, the strategy is:
+    ++  You define a concrete implementation of the abstract config defined
+        within the library, as an ``ext_dataclass`` using ``dcei``
+    ++  When starting up your application/script/etc, create a ``CfgManager``
+        instance and pass it all of your concrete class implementations, as
+        well as whatever backends you need to load the actual values
+    ++  Configatron will handle the rest
+
+    >
+    __embed__: 'code/python'
+        import anyio
+        from configatron import CfgField
+        from configatron import CfgManager
+        from configatron import CfgSource
+        from configatron import Configatron
+        from configatron.prebaked.backends.env_vars import EnvVarBackend
+        from configatron.prebaked.backends.tomlfile import TomlFileBackend
+        from dcei import ext_dataclass
+        from dcei import ext_field
+        from my_library import MyLibraryConfig
+        from my_library import my_library_code
+
+
+        @ext_dataclass(Configatron(namespace='my.app'))
+        class MyConfigImpl(MyLibraryConfig):
+            # By default, we'll search all backends for the field name, ex
+            # ``host`` and ``port``, respectively
+            host: str
+            port: int
+            # Specifying the source backend is optional; only if you want to limit to
+            # a specific (prioritized) list of backends, or have aliases for the field
+            # names. By default we'll check all of them, and apply them in
+            # precedence order from your CfgManager
+            app_secret: str = ext_field(CfgField(
+                CfgSource(
+                    backend='env_vars',
+                    # The env var backend interprets this as ``MY_APP_COOKIE_SECRET``,
+                    # using the config class' namespace
+                    lookup_keys=['COOKIE_SECRET'])))
+
+
+        class MyServerObject:
+
+            # During startup
+            def on_app_start(self):
+                cfg_manager = CfgManager(
+                    MyConfigImpl,
+                    backends={
+                        'config_file': TomlFileBackend('my_config.toml'),
+                        'env_vars': EnvVarBackend()})
+                cfg_manager.load_once_sync()
+
+                # The loaded config is now available to the application code that
+                # requires it
+                anyio.run(my_library_code, self)
+
+    Alternatively, if you don't want to use configatron, you can instead use
+    an instance of ``configatron.prebaked.backends.memory.MemoryBackend``
+    as an adapter to whatever configuration mechanism you want.
+
+> I'm an application developer, and I want to use configatron for my own
+> configs.
+    At a high level, the strategy is:
+    ++  Define a config as both an abstract **and** concrete config class,
+        using both the ``CfgMeta`` metaclass and as an ``ext_dataclass``
+        using ``dcei``
+    ++  Reference it when accessing configs, either by the
+        ``~MyConfigClass`` shorthand or by ``get_active_cfg``
+    ++  When starting up your application/script/etc, create a ``CfgManager``
+        instance and pass it all of your concrete class implementations, as
+        well as whatever backends you need to load the actual values
+    >
+    __embed__: 'code/python'
+        import anyio
+        from configatron import CfgField
+        from configatron import CfgManager
+        from configatron import CfgMeta
+        from configatron import CfgSource
+        from configatron import Configatron
+        from configatron import Secret
+        from configatron.prebaked.backends.env_vars import EnvVarBackend
+        from configatron.prebaked.backends.tomlfile import TomlFileBackend
+        from dcei import ext_dataclass
+        from dcei import ext_field
+        from my_library import MyLibraryConfig
+        from my_library import my_library_code
+
+
+        @ext_dataclass(Configatron(namespace='my.app'))
+        class MyApplicationConfig(metaclass=CfgMeta):
+            # By default, we'll search all backends for the field name, ex
+            # ``host`` and ``port``, respectively
+            host: str
+            port: int
+            # Specifying the source backend is optional; only if you want to limit to
+            # a specific (prioritized) list of backends, or have aliases for the field
+            # names. By default we'll check all of them, and apply them in
+            # precedence order from your CfgManager
+            app_secret: Secret[str] = ext_field(CfgField(
+                CfgSource(
+                    backend='env_vars',
+                    # The env var backend interprets this as ``MY_APP_COOKIE_SECRET``,
+                    # using the config class' namespace
+                    lookup_keys=['COOKIE_SECRET'])))
+
+
+        async def my_application_code(server):
+            # Alternate spelling: ``config = get_active_cfg(MyApplicationConfig)``
+            config = ~MyApplicationConfig
+
+            async with server.bind([f'{config.host}:{config.port}']):
+                # Concise inline references are supported
+                await server.set_secret((~MyApplicationConfig).app_secret)
+
+
+        class MyServerObject:
+
+            # During startup
+            def on_app_start(self):
+                cfg_manager = CfgManager(
+                    MyApplicationConfig,
+                    backends={
+                        'config_file': TomlFileBackend('my_config.toml'),
+                        'env_vars': EnvVarBackend()})
+                cfg_manager.load_once_sync()
+
+                # The loaded config is now available to the application code that
+                # requires it
+                anyio.run(my_application_code, self)
+
+> What about async?
+    Configatron uses ``anyio`` for async support. As long as it's available
+    (for example, by installing via ``pip install configatron[async]``),
+    you'll be able to call ``cfg_manager.load_once_async()`` within a
+    coroutine.
+
+    Note that this also requires the backends you use to support async loading.
+    **All prebaked backends ship with async support.**
