@@ -53,20 +53,6 @@ class MemoryBackend(CfgBackend):
             request: KeyspaceSummary,
             full_keyspace: KeyspaceSummary
             ) -> dict[CfgFieldDesc, Any]:
-        """Loads values from a config backend.
-
-        This is passed both a request, and the full keyspace. The full
-        keyspace is the complete set of all values that the config
-        manager knows about. The request is the current set of fields
-        that need to be loaded (possibly after applying some
-        backend-specific filtering).
-
-        Backends must return all of the values they have available for
-        the passed request. They may also (optionally) include addition
-        values outside the request, but included in the full keyspace;
-        this can be useful if the particular backend responds with extra
-        keys and you don't want to waste the lookup.
-        """
         mapped_keys = MemoryBackendKey.map_keyspace_summary(full_keyspace)
         return {
             mapped_keys[key]: value
@@ -78,23 +64,5 @@ class MemoryBackend(CfgBackend):
             request: KeyspaceSummary,
             full_keyspace: KeyspaceSummary
             ) -> dict[CfgFieldDesc, Any]:
-        """Loads values from a config backend.
-
-        This is passed both a request, and the full keyspace. The full
-        keyspace is the complete set of all values that the config
-        manager knows about. The request is the current set of fields
-        that need to be loaded (possibly after applying some
-        backend-specific filtering).
-
-        Backends must return all of the values they have available for
-        the passed request. They may also (optionally) include addition
-        values outside the request, but included in the full keyspace;
-        this can be useful if the particular backend responds with extra
-        keys and you don't want to waste the lookup.
-        """
         await anyio.sleep(0)
-        mapped_keys = MemoryBackendKey.map_keyspace_summary(full_keyspace)
-        return {
-            mapped_keys[key]: value
-            for key, value in self.values.items()
-            if key in mapped_keys}
+        return self.load_sync(request, full_keyspace)

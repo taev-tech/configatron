@@ -1,0 +1,59 @@
+from collections.abc import Mapping
+from collections.abc import Sequence
+from pathlib import Path
+from unittest.mock import Mock
+from unittest.mock import patch
+
+from configatron.backends import KeyspaceSummary
+from configatron.cfg_abstract import CfgMeta
+from configatron.prebaked.backends.jsonfile import JsonFileBackend
+from configatron.types import CfgFieldDesc
+from configatron.types import CfgSource
+
+CONFIG_JSON = '''
+{
+    "one": "one",
+    "sample_config": {
+        "two": "two",
+        "three": "three",
+        "special": "four"
+    }
+}
+'''
+_FAKE_CFG_CLS = Mock(CfgMeta)
+DESC_1 = CfgFieldDesc(_FAKE_CFG_CLS, None, 'one')
+DESC_2 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'two')
+DESC_3 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'three')
+DESC_4 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'four')
+
+
+@patch.object(Path, 'read_text', autospec=True, return_value=CONFIG_JSON)
+class TestJsonFileBackend:
+
+    def test_loading(self, path_patch):
+        class FakeConfig(metaclass=CfgMeta):
+            ...
+
+        backend = JsonFileBackend('foo.toml')
+
+        keyspace_info: Mapping[
+            str | None, Sequence[tuple[CfgFieldDesc, CfgSource]]
+        ] = {
+            'sample_config': [
+                (DESC_2, CfgSource('backend_foo', ['two'])),
+                (DESC_3, CfgSource('backend_foo', ['three'])),
+                (DESC_4, CfgSource('backend_foo', ['special'])),
+            ],
+            None: [
+                (DESC_1, CfgSource('backend_foo', ['one'])),
+            ],
+        }
+        keyspace = KeyspaceSummary(keyspace_info)
+
+        retval = backend.load_sync(keyspace, keyspace)
+
+        assert path_patch.call_count == 1
+        assert retval[DESC_1] == 'one'
+        assert retval[DESC_2] == 'two'
+        assert retval[DESC_3] == 'three'
+        assert retval[DESC_4] == 'four'
