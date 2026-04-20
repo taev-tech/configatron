@@ -27,3 +27,7 @@
     ++  **however, it might be smart to allow duplicate namespace=None classes.**
         not sure either way about this one. it would take some thought as well.
 
+
+
+> Features ideas etc
+    ++  ``get_active_cfg`` "namespace" kwarg
