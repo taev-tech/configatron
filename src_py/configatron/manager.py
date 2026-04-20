@@ -21,7 +21,7 @@ from docnote import DocnoteConfig
 from docnote import Note
 from docnote import docnote
 
-from configatron._analysis import FieldAnalysis
+from configatron._analysis import CfgAnalysis
 from configatron._analysis import analyze_cfg_cls
 from configatron._registry import normalize_config_cls
 from configatron.backends import CfgBackend
@@ -105,8 +105,7 @@ class CfgManager:
             TypeCoercer | None,
             Note('''The type coercer to use for configs. Can be updated after
                 creating the config manager. Set to ``None`` to remove.''')]
-    _analysis: dict[str | None, tuple[FieldAnalysis, ...]] = field(
-        repr=False, compare=False)
+    _analysis: CfgAnalysis = field(repr=False, compare=False)
     _field_routes: dict[_CfgFieldRouteKey, _CfgFieldRoute] = field(
         repr=False, compare=False)
     _keyspaces_by_backend: dict[str, KeyspaceSummary] = field(
@@ -166,7 +165,7 @@ class CfgManager:
         calculates the lookup structures needed to actually load
         configs.
         """
-        analysis: dict[str | None, tuple[FieldAnalysis, ...]]
+        analysis: CfgAnalysis
         self._analysis = analysis = {}
         for namespace, concrete_cfg_cls in self.cfg_classes.items():
             norm_cfg_cls = normalize_config_cls(concrete_cfg_cls)
@@ -298,8 +297,7 @@ class CfgManager:
                     namespace: tuple(field_tuples)
                     for namespace, field_tuples in wip_by_namespace.items()}))
 
-    @property
-    def audit_report(self) -> dict[str | None, tuple[FieldAnalysis, ...]]:
+    def audit_configs(self) -> CfgAnalysis:
         """This generates a summary of all concrete config fields passed
         to the config manager during its creation, grouped by the
         namespace of their parent concrete config.

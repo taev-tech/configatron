@@ -113,3 +113,13 @@ def analyze_cfg_cls(
             sources=sources))
 
     return tuple(retval)
+
+
+type CfgAnalysis = Annotated[
+    dict[str | None, tuple[FieldAnalysis, ...]],
+    Note('''A ``CfgAnalysis`` contains a record of all concrete config classes
+        registered with a particular ``CfgManager``, including all of their
+        respective fields.
+
+        The keys in the analysis are the config namespace, and the values are
+        a sequence of the corresponding config's fields.''')]

@@ -38,6 +38,7 @@ class MyLibraryConfig(Protocol, metaclass=CfgMeta):
 
 async def my_library_code(server):
     # Alternate spelling: ``config = get_active_cfg(MyLibraryConfig)``
+    # (don't forget to import ``configatron.manager.get_active_cfg``)
     config = ~MyLibraryConfig
 
     async with server.bind([f'{config.host}:{config.port}']):
