@@ -116,7 +116,7 @@ class CfgSource:
                 in that case, the fieldname will be inferred as the only
                 lookup key).''')]
     lookup_keys: Annotated[
-            Sequence[str],
+            tuple[str, ...],
             Note('''An ordered tuple of possible lookup keys for the field.
                 Earlier items should be searched first (ie, ``[0]`` before
                 ``[1]``, etc).''')]

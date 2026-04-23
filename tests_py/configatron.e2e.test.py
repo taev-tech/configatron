@@ -2,7 +2,9 @@ from typing import Protocol
 
 from dcei import ext_dataclass
 from dcei import ext_field
+from pydantic import TypeAdapter
 
+from configatron import CfgAnalysis
 from configatron.cfg_abstract import CfgMeta
 from configatron.cfg_concrete import Configatron
 from configatron.manager import CfgManager
@@ -74,3 +76,26 @@ class TestConfigatronE2E:
         assert (~FakeConfigImplementation).foo == foo_val
         assert (~FakeConfigImplementation).bar == bar_val
         assert (~FakeConfigImplementation).baz == baz_val
+
+
+class TestSerializationE2E:
+
+    def test_analysis_roundtrip(self):
+        """A roundtrip de/serialization of a config analysis using
+        pydantic must complete successfully.
+        """
+        @ext_dataclass(Configatron(namespace='foons'), slots=True)
+        class FakeConfigImplementation(metaclass=CfgMeta):
+            foo: int
+            bar: str = ext_field(CfgField(CfgSource('mem', ('BAR_FIELD',)),))
+            baz: Secret[str]
+
+        mgmt = CfgManager(FakeConfigImplementation, backends={})
+
+        type_adapter = TypeAdapter(CfgAnalysis)
+        audit = mgmt.audit_configs()
+
+        serialized = type_adapter.dump_json(audit)
+        deserialized = type_adapter.validate_json(serialized)
+
+        assert deserialized == audit
