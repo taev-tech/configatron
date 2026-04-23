@@ -130,14 +130,6 @@ class CfgSource:
 
 @dataclass(slots=True, frozen=True)
 class CfgFieldDesc:
-    cfg_cls: Annotated[
-            CfgMeta,
-            Note('''The concrete config class that contains the field. This
-                is primarily included as a convenience to the config manager
-                for use when processing the return value of field loading,
-                but it may also be useful if, for whatever reason, the loading
-                backend needs access to the underlying class.''')
-        ] = field(compare=False, repr=False)
     namespace: str | None
     name: Annotated[str, Note('The attribute name from the config class')]
 

@@ -1,7 +1,6 @@
 from collections.abc import Mapping
 from collections.abc import Sequence
 from pathlib import Path
-from unittest.mock import Mock
 from unittest.mock import patch
 
 from configatron.backends import KeyspaceSummary
@@ -18,11 +17,10 @@ two = "two"
 three = "three"
 special = "four"
 '''
-_FAKE_CFG_CLS = Mock(CfgMeta)
-DESC_1 = CfgFieldDesc(_FAKE_CFG_CLS, None, 'one')
-DESC_2 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'two')
-DESC_3 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'three')
-DESC_4 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'four')
+DESC_1 = CfgFieldDesc(None, 'one')
+DESC_2 = CfgFieldDesc('sample_config', 'two')
+DESC_3 = CfgFieldDesc('sample_config', 'three')
+DESC_4 = CfgFieldDesc('sample_config', 'four')
 
 
 @patch.object(Path, 'read_text', autospec=True, return_value=CONFIG_TOML)
