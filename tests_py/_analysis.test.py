@@ -135,7 +135,7 @@ class TestAnalyzeCfgCls:
             baz: Secret[str]
 
         source1 = CfgSource('env', ('APP_SECRET_BAZ', 'DEPR_APP_SECRET_BAZ'))
-        source2 = CfgSource('keychain', ('APP_SECRET_BAZ'))
+        source2 = CfgSource('keychain', ('APP_SECRET_BAZ',))
 
         @ext_dataclass(Configatron(namespace='foo'), slots=True)
         class FakeConfigImplementation(FakeConfig):

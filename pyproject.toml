@@ -22,6 +22,7 @@ test = [
     "pytest >= 8.1.1",
     "pytest-anyio>=0.0.0",
     "configatron_testutils",
+    "pydantic>=2.12.5",
 ]
 
 lint = [

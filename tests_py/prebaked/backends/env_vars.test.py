@@ -34,10 +34,10 @@ class TestEnvVarBackend:
             str | None, Sequence[tuple[CfgFieldDesc, CfgSource]]
         ] = {
             'sample_config': [
-                (DESC_1, CfgSource('backend_foo', ['one'])),
-                (DESC_2, CfgSource('backend_foo', ['two'])),
-                (DESC_3, CfgSource('backend_foo', ['three'])),
-                (DESC_4, CfgSource('backend_foo', ['special'])),
+                (DESC_1, CfgSource('backend_foo', ('one',))),
+                (DESC_2, CfgSource('backend_foo', ('two',))),
+                (DESC_3, CfgSource('backend_foo', ('three',))),
+                (DESC_4, CfgSource('backend_foo', ('special',))),
             ]
         }
         keyspace = KeyspaceSummary(keyspace_info)

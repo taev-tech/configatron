@@ -63,6 +63,7 @@ repl = [
 ]
 test = [
     { name = "configatron-testutils" },
+    { name = "pydantic" },
     { name = "pytest" },
     { name = "pytest-anyio" },
 ]
@@ -84,6 +85,7 @@ repl = [
 ]
 test = [
     { name = "configatron-testutils", editable = "sidecars_py/configatron_testutils" },
+    { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pytest", specifier = ">=8.1.1" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
 ]
