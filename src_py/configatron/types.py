@@ -17,7 +17,6 @@ from docnote import Note
 if typing.TYPE_CHECKING:
     from _typeshed import DataclassInstance
 
-    from configatron.cfg_abstract import CfgMeta
     from configatron.cfg_concrete import Configatron
 else:
     DataclassInstance = object
