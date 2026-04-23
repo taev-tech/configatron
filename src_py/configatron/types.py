@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import typing
-from collections.abc import Sequence
 from dataclasses import dataclass
 from dataclasses import field
 from enum import Enum
