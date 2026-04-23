@@ -109,19 +109,19 @@ class TestAnalyzeCfgCls:
             cfg_manager._analysis = {
                 'foons': (
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'foo'),
+                        CfgFieldDesc('foons', 'foo'),
                         None,
                         False,
                         False,
                         (CfgSource(None, ('foo',)),),),
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                        CfgFieldDesc('foons', 'bar'),
                         None,
                         False,
                         False,
                         (CfgSource(None, ('bar',)),),),
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'baz'),
+                        CfgFieldDesc('foons', 'baz'),
                         None,
                         True,
                         False,
@@ -136,13 +136,13 @@ class TestAnalyzeCfgCls:
 
         assert mgmt._field_routes == {
             _CfgFieldRouteKey('foons', 'foo'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'foo'),
+                CfgFieldDesc('foons', 'foo'),
                 [_DefiniteCfgSource('mem', ('foo',))]),
             _CfgFieldRouteKey('foons', 'bar'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                CfgFieldDesc('foons', 'bar'),
                 [_DefiniteCfgSource('mem', ('bar',))]),
             _CfgFieldRouteKey('foons', 'baz'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'baz'),
+                CfgFieldDesc('foons', 'baz'),
                 [_DefiniteCfgSource('mem', ('baz',))]),
         }
         assert mgmt._keyspaces_by_backend['mem'] == KeyspaceSummary(
@@ -153,13 +153,13 @@ class TestAnalyzeCfgCls:
                     # recovered in the key used in the _keyspaces_by_backend
                     # mapping.
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'foo'),
+                        CfgFieldDesc('foons', 'foo'),
                         CfgSource(None, ('foo',))),
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                        CfgFieldDesc('foons', 'bar'),
                         CfgSource(None, ('bar',))),
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'baz'),
+                        CfgFieldDesc('foons', 'baz'),
                         CfgSource(None, ('baz',))),)
             })
 
@@ -189,19 +189,19 @@ class TestAnalyzeCfgCls:
             cfg_manager._analysis = {
                 'foons': (
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'foo'),
+                        CfgFieldDesc('foons', 'foo'),
                         None,
                         False,
                         False,
                         (CfgSource(None, ('foo',)),),),
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                        CfgFieldDesc('foons', 'bar'),
                         None,
                         False,
                         False,
                         (CfgSource(None, ('bar',)),),),
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'baz'),
+                        CfgFieldDesc('foons', 'baz'),
                         None,
                         True,
                         False,
@@ -218,17 +218,17 @@ class TestAnalyzeCfgCls:
 
         assert mgmt._field_routes == {
             _CfgFieldRouteKey('foons', 'foo'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'foo'),
+                CfgFieldDesc('foons', 'foo'),
                 [
                     _DefiniteCfgSource('mem', ('foo',)),
                     _DefiniteCfgSource('mem_plaintext', ('foo',))]),
             _CfgFieldRouteKey('foons', 'bar'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                CfgFieldDesc('foons', 'bar'),
                 [
                     _DefiniteCfgSource('mem', ('bar',)),
                     _DefiniteCfgSource('mem_plaintext', ('bar',))]),
             _CfgFieldRouteKey('foons', 'baz'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'baz'),
+                CfgFieldDesc('foons', 'baz'),
                 [_DefiniteCfgSource('mem', ('baz',))]),
         }
         assert mgmt._keyspaces_by_backend['mem_plaintext'] == KeyspaceSummary(
@@ -239,10 +239,10 @@ class TestAnalyzeCfgCls:
                     # recovered in the key used in the _keyspaces_by_backend
                     # mapping.
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'foo'),
+                        CfgFieldDesc('foons', 'foo'),
                         CfgSource(None, ('foo',))),
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                        CfgFieldDesc('foons', 'bar'),
                         CfgSource(None, ('bar',))),)
             })
 
@@ -273,19 +273,19 @@ class TestAnalyzeCfgCls:
             cfg_manager._analysis = {
                 'foons': (
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'foo'),
+                        CfgFieldDesc('foons', 'foo'),
                         None,
                         False,
                         False,
                         (CfgSource('mem', ('FOO_FIELD',)),),),
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'oof'),
+                        CfgFieldDesc('foons', 'oof'),
                         None,
                         False,
                         False,
                         (CfgSource(None, ('OOF_FIELD',)),),),
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                        CfgFieldDesc('foons', 'bar'),
                         None,
                         False,
                         False,
@@ -293,7 +293,7 @@ class TestAnalyzeCfgCls:
                             CfgSource('mem_plaintext', ('BAR_FIELD',)),
                             CfgSource(None, ('BAR_FIELD_2',)),),),
                     FieldAnalysis(
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'baz'),
+                        CfgFieldDesc('foons', 'baz'),
                         None,
                         True,
                         False,
@@ -310,21 +310,21 @@ class TestAnalyzeCfgCls:
 
         assert mgmt._field_routes == {
             _CfgFieldRouteKey('foons', 'foo'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'foo'),
+                CfgFieldDesc('foons', 'foo'),
                 [
                     _DefiniteCfgSource('mem', ('FOO_FIELD',)),]),
             _CfgFieldRouteKey('foons', 'oof'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'oof'),
+                CfgFieldDesc('foons', 'oof'),
                 [
                     _DefiniteCfgSource('mem', ('OOF_FIELD',)),
                     _DefiniteCfgSource('mem_plaintext', ('OOF_FIELD',))]),
             _CfgFieldRouteKey('foons', 'bar'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                CfgFieldDesc('foons', 'bar'),
                 [
                     _DefiniteCfgSource('mem_plaintext', ('BAR_FIELD',)),
                     _DefiniteCfgSource('mem', ('BAR_FIELD_2',)),]),
             _CfgFieldRouteKey('foons', 'baz'): _CfgFieldRoute(
-                CfgFieldDesc(FakeConfigImplementation, 'foons', 'baz'),
+                CfgFieldDesc('foons', 'baz'),
                 [_DefiniteCfgSource('mem', ('baz',))]),
         }
         assert mgmt._keyspaces_by_backend['mem'] == KeyspaceSummary(
@@ -335,16 +335,16 @@ class TestAnalyzeCfgCls:
                     # recovered in the key used in the _keyspaces_by_backend
                     # mapping.
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'foo'),
+                        CfgFieldDesc('foons', 'foo'),
                         CfgSource('mem', ('FOO_FIELD',))),
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'oof'),
+                        CfgFieldDesc('foons', 'oof'),
                         CfgSource(None, ('OOF_FIELD',))),
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                        CfgFieldDesc('foons', 'bar'),
                         CfgSource(None, ('BAR_FIELD_2',))),
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'baz'),
+                        CfgFieldDesc('foons', 'baz'),
                         CfgSource(None, ('baz',))),)
             })
         assert mgmt._keyspaces_by_backend['mem_plaintext'] == KeyspaceSummary(
@@ -355,9 +355,9 @@ class TestAnalyzeCfgCls:
                     # recovered in the key used in the _keyspaces_by_backend
                     # mapping.
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'oof'),
+                        CfgFieldDesc('foons', 'oof'),
                         CfgSource(None, ('OOF_FIELD',))),
                     (
-                        CfgFieldDesc(FakeConfigImplementation, 'foons', 'bar'),
+                        CfgFieldDesc('foons', 'bar'),
                         CfgSource('mem_plaintext', ('BAR_FIELD',))),)
             })

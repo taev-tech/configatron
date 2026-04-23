@@ -102,7 +102,6 @@ def analyze_cfg_cls(
 
         retval.append(FieldAnalysis(
             field_desc=CfgFieldDesc(
-                cfg_cls=norm_cfg_cls.concrete_cls,
                 namespace=namespace,
                 name=fieldname),
             refresh_after_max=refresh_after_max,

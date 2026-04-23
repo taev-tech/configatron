@@ -1,7 +1,6 @@
 import os
 from collections.abc import Mapping
 from collections.abc import Sequence
-from unittest.mock import Mock
 from unittest.mock import patch
 
 from configatron.backends import KeyspaceSummary
@@ -16,11 +15,10 @@ CONFIG_ENVIRON = {
     'SAMPLE_CONFIG_THREE': 'three',
     'SAMPLE_CONFIG_SPECIAL': 'four',
 }
-_FAKE_CFG_CLS = Mock(CfgMeta)
-DESC_1 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'one')
-DESC_2 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'two')
-DESC_3 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'three')
-DESC_4 = CfgFieldDesc(_FAKE_CFG_CLS, 'sample_config', 'four')
+DESC_1 = CfgFieldDesc('sample_config', 'one')
+DESC_2 = CfgFieldDesc('sample_config', 'two')
+DESC_3 = CfgFieldDesc('sample_config', 'three')
+DESC_4 = CfgFieldDesc('sample_config', 'four')
 
 
 @patch.dict(os.environ, CONFIG_ENVIRON, clear=True)
